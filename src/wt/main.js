@@ -5,14 +5,10 @@ import { Worker } from 'worker_threads';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const fileName = 'worker.js';
-const pathFile = path.join(__dirname, fileName);
+const pathFile = path.join(path.dirname(fileURLToPath(import.meta.url)), 'worker.js');
 
 const performCalculations = async () => {
-    const numOfWorkers = os.cpus().length;
-    const result = new Array(numOfWorkers).fill(null);
+    const result = new Array(os.cpus().length).fill(null);
     let i = 10;
 
     const workersRes = await Promise.allSettled(

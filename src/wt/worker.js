@@ -7,7 +7,7 @@ import * as fs from "node:fs";
 
 const sendResult = () => {
 
-    let n = 10;
+    let n = Math.random;
     let myReadStream = fs.createReadStream(nthFibonacci(n));
     () => myReadStream.on('data', (data) => console.log(data.toString())) ;
 };
