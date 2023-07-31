@@ -1,3 +1,6 @@
+//npm run cp
+//отправляем параметры в скрипт, он их обрабатывает
+
 import { fileURLToPath } from 'url';
 import path, { dirname } from 'path';
 import { spawn } from 'child_process';
