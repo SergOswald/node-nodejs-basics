@@ -1,7 +1,7 @@
-const args = process.argv.slice(2);
+const args = process.argv.slice(2); //Для получения параметров в коде приложения//
 
 console.log(`Total number of arguments is ${args.length}`);
-console.log(`Arguments: ${JSON.stringify(args)}`);
+console.log(`Arguments: ${JSON.stringify(args)}`); //переводим в формат JSON//
 
 const echoInput = (chunk) => {
     const chunkStringified = chunk.toString();
