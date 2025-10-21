@@ -1,28 +1,32 @@
-import * as fs from "node:fs";
-import path from "node:path";
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const copy = async () => {
+  const fst = path.join(__dirname, 'files');
+  const snd = path.join(__dirname, 'files_copy');
 
-fs.mkdir(  path.join("./src/fs", "files-copy"), (err) => {
-  if (err) {
-    console.log("FS operation failed", err);
-  } else {
-    fs.readdir( "./src/fs/files", { withFileTypes: true }, 
-    (err, files) => {
-    if ( err ) { 
-      throw err; 
-    }else{
-    files.forEach( file => {
-    fs.copyFile( "./src/fs/files" + `/${file.name}`, "./src/fs/files-copy" + `/${file.name}` , 
-    (err) => { 
-      if ( err ) { 
-        console.log("FS operation failed", err); 
-      } });
-    });
-    };
-    });
-    };
-    });
+  try {
+    await fs.access(fst);
+      //первая папка существует ?
+      try {
+        await fs.access(snd);
+        throw new Error('FS operation failed'); 
+        // если существует — ошибка
+      } catch (err) {
+        if (err.code !== 'ENOENT') throw err; 
+        // если ошибки нет — пробрасываем
+      }
+    await fs.cp(fst, snd, { recursive: true });
+    console.log('Copied successfully!');
+  } catch {
+    throw new Error('FS operation failed');
+  }
 };
 
-await copy();
+
+  await copy();
+
