@@ -1,14 +1,19 @@
-//npm run streams:read
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-import * as fs from "node:fs";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const read = async () => {
-  let myReadStream = fs.createReadStream("./src/streams/files/fileToRead.txt", "UTF8");
-  let myWriteStream = fs.createWriteStream("./src/streams/files/process.stdout", "UTF8");
-  myReadStream.on('data', function (chunk) {
-    //console.log(chunk.toString());
-    myWriteStream.write(chunk.toString());
-});
+  const filePath = join(__dirname, 'files', 'fileToRead.txt');
+
+  if (!fs.existsSync(filePath)) { throw new Error('FS operation failed');}
+  //проверяем наличие файла для чтения
+  const readableStream = fs.createReadStream(filePath, 'utf-8');
+  //создаем читаемый стрим
+  readableStream.pipe(process.stdout);
+  //передаем на вывод в консоль содержимое текстового файла
 };
 
 await read();

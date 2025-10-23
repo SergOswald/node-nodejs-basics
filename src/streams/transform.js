@@ -1,14 +1,18 @@
-//npm run streams:transform
-
-import * as fs from "node:fs";
+import { Transform } from 'stream';
 
 const transform = async () => {
-    let myReadStream = fs.createReadStream("./src/streams/files/process.stdin", "UTF8");
-    let myWriteStream = fs.createWriteStream("./src/streams/files/process.stdout", "UTF8");
-    myReadStream.on('data', function (chunk) {
-      myWriteStream.write(chunk.toString().split('').reverse().join(''));
-    });
+  const reverseStream = new Transform({
+    transform(chunk, encoding, callback) {
+      const reversed = chunk.toString().trim().split('').reverse().join('');
+      this.push(reversed + '\n');
+      callback();
+    },
+  });
 
+  process.stdin.pipe(reverseStream).pipe(process.stdout);
 };
 
 await transform();
+
+// node src/streams/transform
+// вводим в консоль и тут же выводим реверс

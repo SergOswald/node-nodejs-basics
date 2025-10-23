@@ -1,14 +1,30 @@
-//npm run streams:write
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-import * as fs from "node:fs";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const write = async () => {
-  let myReadStream = fs.createReadStream("./src/streams/files/process.stdin", "UTF8");
-  let myWriteStream = fs.createWriteStream("./src/streams/files/fileToWrite.txt", "UTF8");
-    myReadStream.on('data', function (chunk) {
-      //console.log(chunk.toString());
-      myWriteStream.write(chunk.toString());
-    });
+  const filePath = join(__dirname, 'files', 'fileToWrite.txt');
+
+  if (!fs.existsSync(join(__dirname, 'files'))) {
+    throw new Error('FS operation failed');
+  }
+
+  const writableStream = fs.createWriteStream(filePath, { flags: 'w' });
+  //создаем стрим пригодный для записи флаг очищает содержимое файла при новом запуске
+  
+  process.stdin.pipe(writableStream);
+  //записываем то что ввели в файл
+
+  writableStream.on('finish', () => { console.log('Data successfully written to file.');});
+
+  writableStream.on('error', (err) => { console.error('Write error:', err.message);});
 };
 
 await write();
+
+// node src/streams/read
+// вводим данне в консоль-они записываются в файл. Для прерывания в вижуалкод жмем контр+С
+
