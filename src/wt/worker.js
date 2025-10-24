@@ -1,16 +1,19 @@
-// n should be received from main thread
+import { parentPort } from 'worker_threads';
 
-import * as fs from "node:fs";
-import { workerData, parentPort } from 'worker_threads';
-const nthFibonacci = (n) => n < 2 ? n : nthFibonacci(n - 1) + nthFibonacci(n - 2);
+// безопасный обработчик исключений в воркере
+process.on('uncaughtException', (err) => {
+  parentPort.postMessage({ status: 'error', data: null });
+  process.exit(1);
+});
 
-const sendResult = () => {
+const nthFibonacci = (n) => (n < 2 ? n : nthFibonacci(n - 1) + nthFibonacci(n - 2));
+// n - номер члена последовательности
 
-    let n = Math.random;
-    let myReadStream = fs.createReadStream(nthFibonacci(n));
-    () => myReadStream.on('data', (data) => console.log(data.toString())) ;
-};
-
-parentPort.postMessage(nthFibonacci(workerData));
-
-sendResult();
+parentPort.on('message', (n) => {
+  try {
+    const result = nthFibonacci(n);
+    parentPort.postMessage({ status: 'resolved', data: result });
+  } catch (err) {
+    parentPort.postMessage({ status: 'error', data: null });
+  }
+});
