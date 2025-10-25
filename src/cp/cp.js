@@ -1,24 +1,36 @@
-//npm run cp
-//отправляем параметры в скрипт, он их обрабатывает
-
-import { fileURLToPath } from 'url';
-import path, { dirname } from 'path';
 import { spawn } from 'child_process';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-const pathToFile = path.join(dirname(fileURLToPath(import.meta.url)), 'files', 'script.js');
-const { stdin, stdout } = process;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const spawnChildProcess = async (args) => {
-    // Write your code here
-    const process = spawn('node', [pathToFile, ...args]);
-    stdin.on('data', (data) => {
-        process.stdin.write(data);
-    });
-    process.stdout.on('data', (data) => {
-        stdout.write(data);
-    });
+  // Путь к дочернему скрипту
+  const scriptPath = join(__dirname, 'files', 'script.js');
+
+  // Создаём дочерний процесс
+  const child = spawn('node', [scriptPath, ...args], {
+    stdio: ['pipe', 'pipe', 'inherit'] // stdin и stdout связаны, stderr выводится в консоль
+  });
+
+  // Слушаем ответы от дочернего процесса
+  child.stdout.on('data', (data) => {
+    console.log(`Child says: ${data.toString().trim()}`);
+  });
+
+  // Отправляем сообщение в дочерний процесс
+  const message = 'Hello from master';
+  console.log(`Master sends: ${message}`);
+  child.stdin.write(message + '\n');
+
+  // Отправляем команду закрытия через 1 секунду
+  setTimeout(() => {
+    child.stdin.write('CLOSE\n');
+  }, 1000);
 };
 
-// Put your arguments in function call to test this functionality
-spawnChildProcess( ['Argument1', 'Argument2', 'Argument3'] );
+// Вызываем с аргументами
+spawnChildProcess(['arg1', 'arg2', 'arg3']);
 
+//node src/cp/cp

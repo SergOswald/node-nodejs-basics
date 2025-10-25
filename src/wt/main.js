@@ -8,17 +8,19 @@ const __dirname = path.dirname(__filename);
 
 export const performCalculations = async () => {
   const cpuCount = os.cpus().length || 1;
+  //количество ядер
   const workerFileUrl = new URL('./worker.js', import.meta.url);
   const baseNumber = 10;
+  //начальное значение номера члена в ряду
 
   // Промисы, по одному на каждого воркера, сохраняют порядок
   const promises = Array.from({ length: cpuCount }).map((_, i) => {
     return new Promise((resolve) => {
       const worker = new Worker(workerFileUrl, { type: 'module' });
-      let settled = false;
+      let flag = false;
       worker.on('message', (msg) => {
-        if (!settled) {
-          settled = true;
+        if (!flag) {
+          flag = true;
           resolve(msg); 
           worker.terminate().catch(() => {});
         // завершить воркер (если нужно)
@@ -27,15 +29,12 @@ export const performCalculations = async () => {
 
       // ошибка внутри воркера
       worker.on('error', (err) => {
-        if (!settled) {
-          settled = true;
-          resolve({ status: 'error', data: null });
-        }
+        if (!flag) { flag = true; resolve({ status: 'error', data: null }); }
       });
 
       worker.on('exit', (code) => {
-        if (!settled) {
-          settled = true;
+        if (!flag) {
+          flag = true;
           // если код 0 — возможно уже прислали сообщение и resolve вызван; иначе — ошибка
           if (code === 0) {
             resolve({ status: 'error', data: null });
@@ -56,3 +55,5 @@ export const performCalculations = async () => {
 };
 
 await performCalculations();
+
+//node src/wt/main
