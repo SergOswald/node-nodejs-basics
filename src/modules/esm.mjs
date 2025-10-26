@@ -1,52 +1,49 @@
-// Import built-in modules using ES Module syntax
-import path from 'path';
+import path, { join } from 'path';
 import os from 'os';
 import { createServer as createServerHttp } from 'http';
 import { fileURLToPath } from 'url';
+import { readFileSync } from 'fs';
 
-// Resolve __filename and __dirname equivalents in ES modules
+// Аналоги __filename и __dirname для ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Import a JS file (executed for side effects only, no exports)
+// Импорт JS-файла с побочными эффектами
 import './files/c.js';
 
-// Generate a random number between 0 and 1
+// Выбираем случайный JSON-файл
 const random = Math.random();
+const filePath = random > 0.5 ? './files/a.json' : './files/b.json';
 
-// Declare variable to hold imported JSON data
-let unknownObject;
+// Чтение JSON вручную
+const jsonText = readFileSync(join(__dirname, filePath), 'utf-8');
+const unknownObject = JSON.parse(jsonText);
 
-// Dynamically import one of two JSON files depending on random value
-if (random > 0.5) {
-  // "assert { type: 'json' }" tells Node to treat file as JSON module
-  unknownObject = await import('./files/a.json', { assert: { type: 'json' } });
-} else {
-  unknownObject = await import('./files/b.json', { assert: { type: 'json' } });
-}
-
-// Log some OS and path information
+// Вывод системной информации
 console.log(`Release ${os.release()}`);
 console.log(`Version ${os.version()}`);
 console.log(`Path segment separator is "${path.sep}"`);
 console.log(`Path to current file is ${__filename}`);
 console.log(`Path to current directory is ${__dirname}`);
 
-// Create an HTTP server
+// Создание HTTP-сервера
 const myServer = createServerHttp((_, res) => {
   res.end('Request accepted');
 });
 
 const PORT = 3000;
 
-// Log the imported JSON object (must access `.default` when using import assertions)
-console.log(unknownObject.default);
+// Вывод содержимого JSON
+console.log(unknownObject);
 
-// Start the server
+// Запуск сервера
 myServer.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}`);
   console.log('To terminate it, use Ctrl+C combination');
 });
 
-// Export objects for use in other modules
+// Экспорт для других модулей
 export { unknownObject, myServer };
+
+
+// node src/modules/esm.mjs
